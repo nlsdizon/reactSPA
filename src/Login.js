@@ -4,7 +4,6 @@ import  {navigate} from '@reach/router';
 import FormError from './FormError'
 
 class Login extends Component {
-
     constructor(props) {
         super(props);
         this.state = {
@@ -40,7 +39,6 @@ class Login extends Component {
             this.setState({errorMessage: error.message}) : 
             this.setState({errorMessage: null});
         });
-
     }
 
     render() {

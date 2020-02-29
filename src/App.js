@@ -7,8 +7,8 @@ import Welcome from './Welcome';
 import Navigation from './Navigation';
 import Login from './Login'
 import Meetings from './Meetings'
+import CheckIn from './CheckIn'
 import Register from './Register'
-
 
 
 class App extends Component {
@@ -17,17 +17,47 @@ class App extends Component {
     this.state = {
       user: '',
       displayName: '',
-      userId: '',
+      userID: '',
     };
   }
 
   componentDidMount() {
     firebase.auth().onAuthStateChanged( FBUser => {
-      if(FBUser){this.setState({
-        user: FBUser,
-        displayName: FBUser.displayName,
-        userId: FBUser.uid,
-      })}
+      if (FBUser)
+      {
+        this.setState
+        ({
+          user: FBUser,
+          displayName: FBUser.displayName,
+          userID: FBUser.uid,
+        });
+        
+        const meetingsRef = firebase.database().ref('meetings/' + FBUser.uid );
+
+        meetingsRef.on('value', snapshot => {
+
+          let meetings = snapshot.val();
+          let meetingsList = [];
+
+          for (let item in meetings)
+          {
+            meetingsList.push({
+              meetingID: item,
+              meetingName : meetings[item].meetingName
+            });
+          }
+
+          this.setState({
+            meetings: meetingsList,
+            howManyMeetings: meetingsList.length
+          });
+
+        });
+      }
+      else 
+      {
+        this.setState({user: ''});
+      }
     })
   }
 
@@ -39,7 +69,7 @@ class App extends Component {
         this.setState({
           user: FBUser,
           displayName: FBUser.displayName,
-          userId: FBUser.uid,
+          userID: FBUser.uid,
         });
         navigate('/meetings');
       })
@@ -51,12 +81,18 @@ class App extends Component {
     this.setState({
       user: null,
       displayName: null,
-      userId: null,
+      userID: null,
     });
 
     firebase.auth().signOut().then(() => {
       navigate('/login');
     })
+  }
+    
+  addMeeting = meetingName => {
+    const ref = firebase.database().ref(`meetings/${this.state.user.uid}`);
+    ref.push({meetingName: meetingName});
+
   }
 
   render()
@@ -69,8 +105,9 @@ class App extends Component {
       <Router>
         <Home path="/" user={this.state.user}/>
         <Login path="/login" user={this.state.user}/>
-        <Meetings path="/meetings" user={this.state.user}/>
-        <Register path="/register" user={this.state.user} registerUser={this.registerUser}/>
+        <Meetings path="/meetings" userID={this.state.userID} meetings ={this.state.meetings} addMeeting={this.addMeeting}/>
+        <CheckIn path="/checkin/:userID/:meetingID" />
+        <Register path="/register" registerUser={this.registerUser}/>
       </Router>
       
       </div>
