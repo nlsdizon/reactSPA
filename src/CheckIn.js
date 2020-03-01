@@ -25,9 +25,16 @@ class CheckIn extends Component {
         const ref = firebase.database().ref(`meetings/${this.props.userID}/${this.props.meetingID}/attendees`);
         ref.push({
             attendeeName: this.state.displayName,
-            attendeeEmail: this.state.email
+            attendeeEmail: this.state.email,
+            star : false,
+
         });
-        navigate(`/attendees/${this.props.userID}/${this.props.meetingID}`);
+        this.setState({
+            displayName: '',
+            email: '',
+        })
+
+        // navigate(`/attendees/${this.props.userID}/${this.props.meetingID}`);
     }
 
     render() {
